@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8"/>
+<title>Oracle 1Z0-083 筆記分類 - Multitenant CDB / PDB 管理 Part 02</title>
+<style>
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #fdfaf6;
+    color: #2c3e50;
+    padding: 24px;
+    max-width: 1050px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .header-card {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 24px 30px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-card h1 { font-size: 1.8em; }
+  .header-actions { display: flex; gap: 10px; }
+  .btn-nav, .btn-print {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-nav { background: rgba(255,255,255,0.2); color: white; border: 1px solid white; }
+  .btn-print { background: #f39c12; color: white; border: none; }
+  .note-summary {
+    background: #fff;
+    border: 1px solid #ebd3b0;
+    border-left: 5px solid #f39c12;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .question-block {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    border-left: 6px solid #f39c12;
+  }
+  .question-header {
+    background: #fef9e7;
+    color: #b9770e;
+    padding: 12px 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+  }
+  .question-header .badge {
+    background: #f39c12;
+    color: white;
+    font-size: 0.8em;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .question-body { padding: 20px 24px; }
+  .wpProQuiz_questionList { list-style: none; margin: 16px 0; }
+  .wpProQuiz_questionListItem {
+    padding: 10px 16px;
+    margin: 7px 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #fafbfc;
+    line-height: 1.6;
+  }
+  .correct-answer-highlight li, .wpProQuiz_questionListItem.wpProQuiz_answerCorrect {
+    background: #e8f8f5 !important;
+    border: 2px solid #2ecc71 !important;
+    color: #1e8449 !important;
+    font-weight: bold;
+  }
+  .badge-correct {
+    background: #27ae60;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    margin-left: 8px;
+  }
+  .wpProQuiz_response { display: none !important; }
+  details.answer-section { border-top: 1px dashed #d5dbdb; }
+  details.answer-section summary {
+    padding: 12px 24px;
+    background: #edf7ed;
+    color: #2e7d32;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .answer-content { padding: 18px 24px; background: #fafdfa; }
+  .user-note-section {
+    background: #fffdf5;
+    border-top: 2px solid #f9e79f;
+    padding: 16px 24px;
+  }
+  .user-note-title { font-weight: bold; color: #b7950b; margin-bottom: 8px; }
+  .user-note-content-display {
+    background: #fff;
+    border: 1px solid #f39c12;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 0.95em;
+    line-height: 1.6;
+  }
+  @media print {
+    .header-actions, .note-summary { display: none !important; }
+    body { background: white; padding: 0; }
+    .question-block { box-shadow: none; page-break-inside: avoid; border: 1px solid #ccc; }
+  }
+
+.question-block { page-break-inside: avoid; break-inside: avoid; }
+.topic-refs { margin-top: 6px; font-size: 0.9em; opacity: 0.9; }
+@media print {
+  .header-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+
+<style id="quiz-interactive-styles">
+/* ── 互動考題與筆記系統樣式 ── */
+:root {
+  --quiz-primary: #1e3c72;
+  --quiz-accent: #f39c12;
+  --quiz-correct: #27ae60;
+  --quiz-correct-bg: #e8f8f5;
+  --quiz-wrong: #e74c3c;
+  --quiz-wrong-bg: #fdedec;
+  --quiz-border: #e2e8f0;
+}
+
+/* 頂部固定控制列 */
+.exam-sticky-bar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  padding: 10px 18px;
+  margin: -24px -24px 20px -24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.sticky-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #2c3e50;
+}
+.sticky-stats .badge-stat {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.85em;
+}
+.badge-done { background: #ebf5fb; color: #2980b9; }
+.badge-ok { background: #e8f8f5; color: #27ae60; }
+.badge-bad { background: #fdedec; color: #e74c3c; }
+
+.sticky-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-bar {
+  padding: 6px 13px;
+  border-radius: 6px;
+  font-size: 0.84em;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #cbd5e0;
+  background: white;
+  color: #2d3748;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-bar:hover { background: #f7fafc; border-color: #a0aec0; transform: translateY(-1px); }
+.btn-bar.primary { background: #1e3c72; color: white; border-color: #1e3c72; }
+.btn-bar.primary:hover { background: #2a5298; }
+.btn-bar.warn { background: #f39c12; color: white; border-color: #f39c12; }
+.btn-bar.warn:hover { background: #d68910; }
+
+/* 題目選項優化 */
+.quiz-choice-item {
+  list-style: none;
+  padding: 10px 14px;
+  margin: 7px 0;
+  border: 1.5px solid var(--quiz-border);
+  border-radius: 8px;
+  background: #fafbfc;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.quiz-choice-item:hover {
+  background: #f4f6f9;
+  border-color: #cbd5e0;
+}
+.quiz-choice-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+  margin: 0;
+  font-weight: normal;
+  line-height: 1.6;
+}
+.quiz-choice-input {
+  margin-top: 4px;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.quiz-choice-text { flex: 1; }
+
+/* 勾選中的狀態 */
+.quiz-choice-item.is-checked {
+  background: #ebf5fb;
+  border-color: #7fb3d5;
+}
+
+/* 批改結果樣式 */
+.quiz-choice-item.ans-correct {
+  background: var(--quiz-correct-bg) !important;
+  border: 2px solid var(--quiz-correct) !important;
+  color: #1e8449 !important;
+  font-weight: 600;
+}
+.quiz-choice-item.ans-wrong-pick {
+  background: var(--quiz-wrong-bg) !important;
+  border: 2px solid var(--quiz-wrong) !important;
+  color: #922b21 !important;
+}
+.quiz-choice-item.ans-missed {
+  border: 2px dashed var(--quiz-correct) !important;
+  background: #f4fbf7 !important;
+}
+
+.opt-badge {
+  font-size: 0.78em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+}
+.badge-is-correct { background: #27ae60; color: white; }
+.badge-is-wrong { background: #e74c3c; color: white; }
+.badge-is-missed { background: #16a085; color: white; }
+
+/* 題目工具列 */
+.q-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e8f0;
+  flex-wrap: wrap;
+}
+.btn-q {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #cbd5e0;
+  background: white;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-q:hover { background: #f7fafc; transform: translateY(-1px); }
+.btn-q.check { background: #27ae60; color: white; border-color: #27ae60; }
+.btn-q.check:hover { background: #229954; }
+.btn-q.star.starred { background: #fef9e7; color: #b7950b; border-color: #f1c40f; }
+
+.q-status-msg {
+  font-size: 0.9em;
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: none;
+}
+.q-status-msg.ok { display: inline-block; background: #e8f8f5; color: #27ae60; }
+.q-status-msg.bad { display: inline-block; background: #fdedec; color: #e74c3c; }
+.q-history-info {
+  font-size: 0.8em;
+  color: #7f8c8d;
+  margin-left: auto;
+}
+
+/* 官方解析與重點筆記（預設折疊，作答後自動展開） */
+.answer-ref-wrapper {
+  margin-top: 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #fdfefe;
+  overflow: hidden;
+  display: none;
+}
+.answer-ref-wrapper.show { display: block; }
+.answer-ref-wrapper details { border: none; }
+.answer-ref-wrapper details summary {
+  padding: 10px 16px;
+  background: #edf7ed;
+  color: #2e7d32;
+  font-weight: bold;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.answer-ref-wrapper .answer-content { padding: 14px 18px; font-size: 0.92em; }
+.answer-ref-wrapper .orig-note-box {
+  background: #fffdf5;
+  border-top: 1.5px solid #f9e79f;
+  padding: 12px 18px;
+  font-size: 0.92em;
+}
+
+/* ✏️ 我的錯誤筆記與檢討區塊 */
+.user-error-note-card {
+  margin-top: 14px;
+  background: #fffcf7;
+  border: 1.5px solid #f9e79f;
+  border-left: 5px solid #f39c12;
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+.error-note-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.error-note-title {
+  font-size: 0.92em;
+  font-weight: bold;
+  color: #b7791f;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.note-auto-save-tag {
+  font-size: 0.76em;
+  color: #27ae60;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.error-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.reason-tag {
+  font-size: 0.78em;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: white;
+  border: 1px solid #ebd3b0;
+  color: #7d6608;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.reason-tag:hover { background: #fef5e7; border-color: #f39c12; }
+.reason-tag.active {
+  background: #f39c12;
+  color: white;
+  border-color: #d68910;
+  font-weight: bold;
+}
+.user-note-input {
+  width: 100%;
+  min-height: 70px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e0d0b8;
+  background: white;
+  font-family: inherit;
+  font-size: 0.9em;
+  color: #2c3e50;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.user-note-input:focus {
+  border-color: #f39c12;
+  box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.15);
+}
+.note-foot-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 0.76em;
+  color: #95a5a6;
+}
+
+/* 列印專用調整 */
+@media print {
+  .exam-sticky-bar, .q-action-bar, .error-tags-row, .note-auto-save-tag, .btn-q {
+    display: none !important;
+  }
+  .answer-ref-wrapper { display: block !important; border: 1px solid #ccc !important; }
+  .user-error-note-card { border: 1px solid #ccc !important; background: white !important; }
+  .user-note-input { border: none !important; resize: none !important; padding: 0 !important; }
+  .quiz-choice-item { border: 1px solid #ddd !important; }
+  .quiz-choice-input { display: none !important; }
+  .opt-badge { display: inline-block !important; }
+}
+</style>
+</head>
+<body>
+<div class="exam-sticky-bar">
+<div class="sticky-stats">
+<span class="badge-stat badge-done">已作答：<b id="stat-answered">0 / 5</b></span>
+<span class="badge-stat badge-ok">答對：<b id="stat-correct">0</b></span>
+<span class="badge-stat badge-bad">答錯：<b id="stat-wrong">0</b></span>
+</div>
+<div class="sticky-actions">
+<a class="btn-bar" href="../index.html">📑 主題目錄</a>
+<a class="btn-bar" href="10_Multitenant_PDB_Part01.html">⬅ 上一份 Part</a>
+<a class="btn-bar" href="10_Multitenant_PDB_Part03.html">下一份 Part ➡</a>
+<button class="btn-bar primary" onclick="checkAllQuestions()" type="button">📋 全部批改</button>
+<button class="btn-bar" onclick="toggleAllAnswers()" type="button">👁️ 顯示/隱藏所有解析</button>
+<button class="btn-bar" onclick="resetAllQuestions()" type="button">🔄 清空本作答</button>
+<button class="btn-bar warn" onclick="exportPartNotes()" type="button">💾 匯出本 Part 筆記</button>
+</div>
+</div>
+
+<div class="header-card">
+<div>
+<h1>📚 Multitenant CDB / PDB 管理</h1>
+<p>Oracle 1Z0-083 重點筆記分類 · Part 02 / 03 · 共 5 題</p>
+<p class="topic-refs">題目來源：E4-Q15、E4-Q18、E5-Q9、E5-Q19、E8-Q14</p>
+</div>
+</div>
+<div class="question-block" id="note-e4q15">
+<div class="question-header">
+<span>Mock Exam 4 · Question 15</span>
+<span class="badge">Multitenant</span>
+</div>
+<div class="question-body">
+<div class="wpProQuiz_question_text">
+<p>Which two are true about changing the LOCAL_UNDO_ENABLED property to false in a CDB? (Choose two.)</p>
+</div>
+<ul class="wpProQuiz_questionList"><li class="quiz-choice-item" data-correct="0" data-pos="0"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q15" type="checkbox" value="0"/><span class="quiz-choice-text">After the change, any user with the required privilege can create an undo tablespace in the PDBs.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="1"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q15" type="checkbox" value="1"/><span class="quiz-choice-text">After the change, only one undo tablespace can exist in CDB$ROOT.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="2"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q15" type="checkbox" value="2"/><span class="quiz-choice-text">After the change, each existing PDB has to be reopened for the new undo mode to take effect.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="3"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q15" type="checkbox" value="3"/><span class="quiz-choice-text">Undo tablespaces existing in PDBs must be dropped before the change.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="4"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q15" type="checkbox" value="4"/><span class="quiz-choice-text">Any new PDB and existing PDBs are automatically configured to use the default undo tablespace in CDB$ROOT.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="5"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q15" type="checkbox" value="5"/><span class="quiz-choice-text">After the change, only a common user with the required privilege can create an undo tablespace in CDB$ROOT.</span></label><span class="opt-badge" style="display:none;"></span></li></ul>
+<div class="q-action-bar">
+<button class="btn-q check" onclick="checkQuestion(this)" type="button">✅ 檢查答案</button>
+<button class="btn-q reset" onclick="resetQuestion(this)" type="button">🔄 重填</button>
+<button class="btn-q star" onclick="toggleStar(this)" type="button">☆ 加星</button>
+<span class="q-status-msg"></span>
+<span class="q-history-info"></span>
+</div>
+<div class="answer-ref-wrapper">
+<details open="">
+<summary>📘 官方解析與重點參考</summary>
+<div class="orig-note-box"><b>📝 重點筆記參考：</b><br/>Any new PDB and existing PDBs are automatically configured to use the default undo tablespace in CDB$ROOT. (這個敘述過於籠統且帶有陷阱。雖然 PDB 會使用 CDB$ROOT 的 Undo，但關鍵點在於「現有的 PDB」不會「自動」無縫切換，它們必須如正確選項所述「重新開啟 (reopened)」才能套用設定。)</div>
+</details>
+</div>
+</div>
+<div class="user-error-note-card" id="note-box-note-e4q15">
+<div class="error-note-head">
+<div class="error-note-title">✏️ <b>我的筆記與錯誤記錄</b></div>
+<div class="note-auto-save-tag">✓ 已儲存</div>
+</div>
+<div class="error-tags-row">
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">觀念不清</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">看錯題目</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">粗心誤選</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">單字不懂</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">題目陷阱</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">死背記錯</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q15')">題庫疑慮</span>
+</div>
+<textarea class="user-note-input" oninput="onNoteInput(this, 'note-e4q15')" placeholder="記下本題觀念、選錯原因或解題技巧...（即時自動存入瀏覽器）"></textarea>
+<div class="note-foot-info">
+<span>輸入文字或點選錯誤標籤即自動保存</span>
+</div>
+</div>
+</div>
+<div class="question-block" id="note-e4q18">
+<div class="question-header">
+<span>Mock Exam 4 · Question 18</span>
+<span class="badge">Multitenant</span>
+</div>
+<div class="question-body">
+<div class="wpProQuiz_question_text">
+<p>For which two requirements can you use the <strong>USER_TABLESPACE</strong> clause with the <strong>CREATE PLUGGABLE DATABASE</strong> command? <em>(Choose two.)</em></p>
+</div>
+<ul class="wpProQuiz_questionList"><li class="quiz-choice-item" data-correct="0" data-pos="0"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q18" type="checkbox" value="0"/><span class="quiz-choice-text">to exclude a temp tablespace when plugging in a PDB</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="1"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q18" type="checkbox" value="1"/><span class="quiz-choice-text">to include specific user tablespaces only when relocating a PDB</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="2"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q18" type="checkbox" value="2"/><span class="quiz-choice-text">to specify a default tablespace in a PDB cloned from another PDB in the same CDB.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="3"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q18" type="checkbox" value="3"/><span class="quiz-choice-text">to specify the list of user tablespaces to include when moving a non-CDB to a PDB</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="4"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q18" type="checkbox" value="4"/><span class="quiz-choice-text">to exclude all tablespaces except SYSTEM, SYSAUX, and TEMP when plugging in a PDB</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="5"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e4q18" type="checkbox" value="5"/><span class="quiz-choice-text">to specify the list of tablespaces to include when creating a PDB from the CDB seed</span></label><span class="opt-badge" style="display:none;"></span></li></ul>
+<div class="q-action-bar">
+<button class="btn-q check" onclick="checkQuestion(this)" type="button">✅ 檢查答案</button>
+<button class="btn-q reset" onclick="resetQuestion(this)" type="button">🔄 重填</button>
+<button class="btn-q star" onclick="toggleStar(this)" type="button">☆ 加星</button>
+<span class="q-status-msg"></span>
+<span class="q-history-info"></span>
+</div>
+<div class="answer-ref-wrapper">
+<details open="">
+<summary>📘 官方解析與重點參考</summary>
+<div class="orig-note-box"><b>📝 重點筆記參考：</b><br/>CREATE PLUGGABLE DATABASE pdb_new <br/>FROM pdb_old@dblink <br/>USER_TABLESPACES=('USERS', 'SALES_DATA') <br/>RELOCATE;</div>
+</details>
+</div>
+</div>
+<div class="user-error-note-card" id="note-box-note-e4q18">
+<div class="error-note-head">
+<div class="error-note-title">✏️ <b>我的筆記與錯誤記錄</b></div>
+<div class="note-auto-save-tag">✓ 已儲存</div>
+</div>
+<div class="error-tags-row">
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">觀念不清</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">看錯題目</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">粗心誤選</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">單字不懂</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">題目陷阱</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">死背記錯</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e4q18')">題庫疑慮</span>
+</div>
+<textarea class="user-note-input" oninput="onNoteInput(this, 'note-e4q18')" placeholder="記下本題觀念、選錯原因或解題技巧...（即時自動存入瀏覽器）"></textarea>
+<div class="note-foot-info">
+<span>輸入文字或點選錯誤標籤即自動保存</span>
+</div>
+</div>
+</div>
+<div class="question-block" id="note-e5q9">
+<div class="question-header">
+<span>Mock Exam 5 · Question 9</span>
+<span class="badge">Multitenant</span>
+</div>
+<div class="question-body">
+<div class="wpProQuiz_question_text">
+<p>Which three can be done using Oracle Database Configuration Assistant (DBCA) starting from Oracle Database 19c? (Choose three.)</p>
+</div>
+<ul class="wpProQuiz_questionList"><li class="quiz-choice-item" data-correct="1" data-pos="0"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q9" type="checkbox" value="0"/><span class="quiz-choice-text">cloning a remote container database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="1"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q9" type="checkbox" value="1"/><span class="quiz-choice-text">relocating a remote container database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="2"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q9" type="checkbox" value="2"/><span class="quiz-choice-text">relocating a remote pluggable database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="3"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q9" type="checkbox" value="3"/><span class="quiz-choice-text">cloning a remote pluggable database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="4"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q9" type="checkbox" value="4"/><span class="quiz-choice-text">relocating a remote pluggable database in interactive mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="5"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q9" type="checkbox" value="5"/><span class="quiz-choice-text">cloning a remote container database in interactive mode</span></label><span class="opt-badge" style="display:none;"></span></li></ul>
+<div class="q-action-bar">
+<button class="btn-q check" onclick="checkQuestion(this)" type="button">✅ 檢查答案</button>
+<button class="btn-q reset" onclick="resetQuestion(this)" type="button">🔄 重填</button>
+<button class="btn-q star" onclick="toggleStar(this)" type="button">☆ 加星</button>
+<span class="q-status-msg"></span>
+<span class="q-history-info"></span>
+</div>
+<div class="answer-ref-wrapper">
+<details open="">
+<summary>📘 官方解析與重點參考</summary>
+<div class="orig-note-box"><b>📝 重點筆記參考：</b><br/>Relocate Remote PDB： 將遠端機器上的 PDB 幾乎無停機地「搬移 (Relocate)」到本地端。錯誤選項陷阱分析 (為什麼 Interactive mode 錯？)：cloning a remote container database in interactive mode (您勾錯的選項)   relocating a remote pluggable database in interactive mode   錯誤原因： 陷阱在 "interactive mode (互動式/圖形化介面模式)"。雖然 DBCA 的圖形化介面也能做很多事，但 Oracle 在 19c 官方發布的新特性清單中，特別強調並針對的是 Silent Mode (靜默模式) 下對 Remote CDB/PDB 複製與搬移的支援。考題直接對應了官方的新功能說明文件，因此所有標示 interactive mode 的選項都是用來混淆的誘餌。</div>
+</details>
+</div>
+</div>
+<div class="user-error-note-card" id="note-box-note-e5q9">
+<div class="error-note-head">
+<div class="error-note-title">✏️ <b>我的筆記與錯誤記錄</b></div>
+<div class="note-auto-save-tag">✓ 已儲存</div>
+</div>
+<div class="error-tags-row">
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">觀念不清</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">看錯題目</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">粗心誤選</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">單字不懂</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">題目陷阱</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">死背記錯</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q9')">題庫疑慮</span>
+</div>
+<textarea class="user-note-input" oninput="onNoteInput(this, 'note-e5q9')" placeholder="記下本題觀念、選錯原因或解題技巧...（即時自動存入瀏覽器）"></textarea>
+<div class="note-foot-info">
+<span>輸入文字或點選錯誤標籤即自動保存</span>
+</div>
+</div>
+</div>
+<div class="question-block" id="note-e5q19">
+<div class="question-header">
+<span>Mock Exam 5 · Question 19</span>
+<span class="badge">Multitenant</span>
+</div>
+<div class="question-body">
+<div class="wpProQuiz_question_text">
+<p>Which three are true about creating container databases (CDBs) and pluggable databases (PDBs) in Oracle 19c and later releases? (Choose three.)</p>
+</div>
+<ul class="wpProQuiz_questionList"><li class="quiz-choice-item" data-correct="0" data-pos="0"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q19" type="checkbox" value="0"/><span class="quiz-choice-text">A CDB can be duplicated using Recovery Manager (RMAN) with no configuration required before starting the duplication.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="1"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q19" type="checkbox" value="1"/><span class="quiz-choice-text">A PDB snapshot can be a sparse copy of a source PDB.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="2"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q19" type="checkbox" value="2"/><span class="quiz-choice-text">A snapshot copy PDB can be a full copy of a source PDB.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="3"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q19" type="checkbox" value="3"/><span class="quiz-choice-text">A PDB snapshot can be a full copy of a source PDB.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="4"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q19" type="checkbox" value="4"/><span class="quiz-choice-text">A PDB snapshot depends on an existing storage snapshot of the source PDB.</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="5"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e5q19" type="checkbox" value="5"/><span class="quiz-choice-text">A CDB can be duplicated using the Database Configuration Assistant (DBCA) in silent mode with no configuration required before starting the duplication.</span></label><span class="opt-badge" style="display:none;"></span></li></ul>
+<div class="q-action-bar">
+<button class="btn-q check" onclick="checkQuestion(this)" type="button">✅ 檢查答案</button>
+<button class="btn-q reset" onclick="resetQuestion(this)" type="button">🔄 重填</button>
+<button class="btn-q star" onclick="toggleStar(this)" type="button">☆ 加星</button>
+<span class="q-status-msg"></span>
+<span class="q-history-info"></span>
+</div>
+<div class="answer-ref-wrapper">
+<details open="">
+<summary>📘 官方解析與重點參考</summary>
+<div class="orig-note-box"><b>📝 重點筆記參考：</b><br/>個答案中，只有一個是正確的，另外兩個踩到了名詞與機制的陷阱！   真正正確的三個選項是：A PDB snapshot can be a sparse copy of a source PDB. (PDB 快照可以是來源 PDB 的稀疏複本)   A PDB snapshot can be a full copy of a source PDB. (PDB 快照可以是來源 PDB 的完整複本)   A CDB can be duplicated using the Database Configuration Assistant (DBCA) in silent mode with no configuration required before starting the duplication. (可以使用 DBCA 靜默模式複製 CDB，在開始複製前不需進行任何手動配置)   💡 專家技術解析這題考驗的是 DBA 對 Oracle 19c 中 CDB 複製工具 (DBCA vs RMAN) 的準備工作差異，以及 快照技術名詞 (PDB Snapshot vs Snapshot Copy PDB) 的嚴格區分。錯誤選項陷阱分析 (為什麼您勾的另外兩個錯了？)：A CDB can be duplicated using Recovery Manager (RMAN) with no configuration required... (您誤踩的陷阱)   錯誤原因： 就像我們在前一題 (Q18) 討論過的，使用 RMAN 執行 DUPLICATE 之前，DBA 必須親自手動準備好一個輔助執行個體 (Auxiliary Instance)。您必須寫好 pfile、啟動到 NOMOUNT 狀態、甚至設定 SQL*Net 連線。這絕對稱不上是 "no configuration required (無需配置)"。正確做法： 相反地，如果您使用 DBCA 靜默模式 (dbca -createDuplicateDB ...)，DBCA 會在背景全自動幫您建 pfile、開輔助執行個體、跑 RMAN 複製，這才是真正的「無需事前配置」。A snapshot copy PDB can be a full copy of a source PDB. (您誤踩的陷阱)   錯誤原因： 這是 Oracle 考題最愛玩的文字遊戲。Snapshot Copy PDB： 這是一項依賴底層儲存系統 (如 ACFS 或 ZFS) 快照技術的功能。既然是儲存層級的快照指標，它天生就必定是稀疏的 (Sparse)，絕對不會是「完整複本 (Full copy)」。PDB Snapshot： 這是 18c 以後引入的獨立功能（常搭配快照輪播 Snapshot Carousel 使用）。它可以是唯讀的「完整拷貝 (Full copy)」，也可以搭配特定儲存變成「稀疏拷貝 (Sparse copy)」。所以這題的正確答案是另外兩個描述 PDB Snapshot 的選項</div>
+</details>
+</div>
+</div>
+<div class="user-error-note-card" id="note-box-note-e5q19">
+<div class="error-note-head">
+<div class="error-note-title">✏️ <b>我的筆記與錯誤記錄</b></div>
+<div class="note-auto-save-tag">✓ 已儲存</div>
+</div>
+<div class="error-tags-row">
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">觀念不清</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">看錯題目</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">粗心誤選</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">單字不懂</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">題目陷阱</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">死背記錯</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e5q19')">題庫疑慮</span>
+</div>
+<textarea class="user-note-input" oninput="onNoteInput(this, 'note-e5q19')" placeholder="記下本題觀念、選錯原因或解題技巧...（即時自動存入瀏覽器）"></textarea>
+<div class="note-foot-info">
+<span>輸入文字或點選錯誤標籤即自動保存</span>
+</div>
+</div>
+</div>
+<div class="question-block" id="note-e8q14">
+<div class="question-header">
+<span>Mock Exam 8 · Question 14</span>
+<span class="badge">Multitenant</span>
+</div>
+<div class="question-body">
+<div class="wpProQuiz_question_text">
+<p>Which three can be done using Oracle Database Configuration Assistant (DBCA) starting from Oracle Database 19c? (Choose three.)</p>
+</div>
+<ul class="wpProQuiz_questionList"><li class="quiz-choice-item" data-correct="1" data-pos="0"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e8q14" type="checkbox" value="0"/><span class="quiz-choice-text">cloning a remote pluggable database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="1"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e8q14" type="checkbox" value="1"/><span class="quiz-choice-text">relocating a remote container database in interactive mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="2"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e8q14" type="checkbox" value="2"/><span class="quiz-choice-text">cloning a remote container database in interactive mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="3"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e8q14" type="checkbox" value="3"/><span class="quiz-choice-text">relocating a remote pluggable database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="0" data-pos="4"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e8q14" type="checkbox" value="4"/><span class="quiz-choice-text">relocating a remote pluggable database in interactive mode</span></label><span class="opt-badge" style="display:none;"></span></li><li class="quiz-choice-item" data-correct="1" data-pos="5"><label class="quiz-choice-label"><input class="quiz-choice-input" name="choice_note-e8q14" type="checkbox" value="5"/><span class="quiz-choice-text">cloning a remote container database in silent mode</span></label><span class="opt-badge" style="display:none;"></span></li></ul>
+<div class="q-action-bar">
+<button class="btn-q check" onclick="checkQuestion(this)" type="button">✅ 檢查答案</button>
+<button class="btn-q reset" onclick="resetQuestion(this)" type="button">🔄 重填</button>
+<button class="btn-q star" onclick="toggleStar(this)" type="button">☆ 加星</button>
+<span class="q-status-msg"></span>
+<span class="q-history-info"></span>
+</div>
+<div class="answer-ref-wrapper">
+<details open="">
+<summary>📘 官方解析與重點參考</summary>
+<div class="orig-note-box"><b>📝 重點筆記參考：</b><br/>陷阱原因： 雖然 DBCA 提供了圖形化的互動模式 (Interactive mode)，但在 19c 的官方文件與新功能宣告中，針對「遠端 (remote)」的 PDB/CDB 複製與重新定位，特別強調的是透過 Silent mode 所帶來的無縫整合與自動化腳本支援</div>
+</details>
+</div>
+</div>
+<div class="user-error-note-card" id="note-box-note-e8q14">
+<div class="error-note-head">
+<div class="error-note-title">✏️ <b>我的筆記與錯誤記錄</b></div>
+<div class="note-auto-save-tag">✓ 已儲存</div>
+</div>
+<div class="error-tags-row">
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">觀念不清</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">看錯題目</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">粗心誤選</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">單字不懂</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">題目陷阱</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">死背記錯</span>
+<span class="reason-tag" onclick="toggleReasonTag(this, 'note-e8q14')">題庫疑慮</span>
+</div>
+<textarea class="user-note-input" oninput="onNoteInput(this, 'note-e8q14')" placeholder="記下本題觀念、選錯原因或解題技巧...（即時自動存入瀏覽器）"></textarea>
+<div class="note-foot-info">
+<span>輸入文字或點選錯誤標籤即自動保存</span>
+</div>
+</div>
+</div>
+
+<script id="quiz-interactive-scripts">
+(function() {
+  const STORAGE_PREFIX = "ora083_topic_quiz_";
+  let totalCards = 0;
+
+  function getCardData(cardId) {
+    try {
+      const raw = localStorage.getItem(STORAGE_PREFIX + cardId);
+      return raw ? JSON.parse(raw) : { choices: [], note: "", reasons: [], attempts: 0, wrong: 0, star: false, lastWrongAt: null, checked: false };
+    } catch(e) {
+      return { choices: [], note: "", reasons: [], attempts: 0, wrong: 0, star: false, lastWrongAt: null, checked: false };
+    }
+  }
+
+  function saveCardData(cardId, data) {
+    try {
+      localStorage.setItem(STORAGE_PREFIX + cardId, JSON.stringify(data));
+    } catch(e) {}
+  }
+
+  // 取得題目的正確答案陣列 [0, 2, ...]
+  function getCorrectAnswers(card) {
+    const arr = [];
+    card.querySelectorAll('.quiz-choice-item').forEach((li, idx) => {
+      if (li.getAttribute('data-correct') === '1') {
+        arr.push(idx);
+      }
+    });
+    return arr;
+  }
+
+  // 取得使用者勾選的答案陣列
+  function getUserChoices(card) {
+    const arr = [];
+    card.querySelectorAll('.quiz-choice-input:checked').forEach(input => {
+      arr.push(parseInt(input.value, 10));
+    });
+    return arr;
+  }
+
+  // 驗證單一題目
+  window.checkQuestion = function(btn) {
+    const card = btn.closest('.question-block');
+    if (!card) return;
+    const cardId = card.id;
+    const userChoices = getUserChoices(card);
+    const correctAnswers = getCorrectAnswers(card);
+    const data = getCardData(cardId);
+
+    if (userChoices.length === 0) {
+      alert("請先選擇答案再進行檢查！");
+      return;
+    }
+
+    const isCorrect = (userChoices.length === correctAnswers.length) &&
+      userChoices.every(c => correctAnswers.includes(c));
+
+    data.choices = userChoices;
+    data.attempts = (data.attempts || 0) + 1;
+    data.checked = true;
+
+    if (isCorrect) {
+      // 答對
+    } else {
+      data.wrong = (data.wrong || 0) + 1;
+      data.lastWrongAt = new Date().toISOString();
+    }
+    saveCardData(cardId, data);
+    applyQuestionState(card, data, true);
+    updateGlobalStats();
+  };
+
+  // 重置單一題目
+  window.resetQuestion = function(btn) {
+    const card = btn.closest('.question-block');
+    if (!card) return;
+    const cardId = card.id;
+    const data = getCardData(cardId);
+    data.choices = [];
+    data.checked = false;
+    saveCardData(cardId, data);
+    applyQuestionState(card, data, false);
+    updateGlobalStats();
+  };
+
+  // 加星切換
+  window.toggleStar = function(btn) {
+    const card = btn.closest('.question-block');
+    if (!card) return;
+    const cardId = card.id;
+    const data = getCardData(cardId);
+    data.star = !data.star;
+    saveCardData(cardId, data);
+    btn.classList.toggle('starred', data.star);
+    btn.innerHTML = data.star ? "⭐ 已加星" : "☆ 加星";
+  };
+
+  // 標籤切換
+  window.toggleReasonTag = function(tagEl, cardId) {
+    const data = getCardData(cardId);
+    const tagName = tagEl.innerText.trim();
+    data.reasons = data.reasons || [];
+    const idx = data.reasons.indexOf(tagName);
+    if (idx >= 0) {
+      data.reasons.splice(idx, 1);
+      tagEl.classList.remove('active');
+    } else {
+      data.reasons.push(tagName);
+      tagEl.classList.add('active');
+    }
+    saveCardData(cardId, data);
+    flashSaveTip(tagEl.closest('.user-error-note-card'));
+  };
+
+  // 筆記文字變更
+  let noteTimer = null;
+  window.onNoteInput = function(textarea, cardId) {
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => {
+      const data = getCardData(cardId);
+      data.note = textarea.value;
+      saveCardData(cardId, data);
+      flashSaveTip(textarea.closest('.user-error-note-card'));
+    }, 350);
+  };
+
+  function flashSaveTip(box) {
+    if (!box) return;
+    const tip = box.querySelector('.note-auto-save-tag');
+    if (tip) {
+      tip.style.opacity = '1';
+      setTimeout(() => { tip.style.opacity = '0'; }, 1000);
+    }
+  }
+
+  // 套用單題狀態 (包括勾選、高亮、狀態字卡)
+  function applyQuestionState(card, data, showAnswers) {
+    const correctAnswers = getCorrectAnswers(card);
+    const userChoices = data.choices || [];
+    const items = card.querySelectorAll('.quiz-choice-item');
+
+    items.forEach((li, idx) => {
+      const input = li.querySelector('.quiz-choice-input');
+      const isChecked = userChoices.includes(idx);
+      if (input) input.checked = isChecked;
+      li.classList.toggle('is-checked', isChecked);
+
+      // 清除舊批改狀態
+      li.classList.remove('ans-correct', 'ans-wrong-pick', 'ans-missed');
+      const badge = li.querySelector('.opt-badge');
+      if (badge) badge.style.display = 'none';
+
+      if (showAnswers) {
+        const isOptCorrect = correctAnswers.includes(idx);
+        if (isChecked && isOptCorrect) {
+          li.classList.add('ans-correct');
+          if (badge) {
+            badge.className = 'opt-badge badge-is-correct';
+            badge.innerText = '✅ 正確選擇';
+            badge.style.display = 'inline-block';
+          }
+        } else if (isChecked && !isOptCorrect) {
+          li.classList.add('ans-wrong-pick');
+          if (badge) {
+            badge.className = 'opt-badge badge-is-wrong';
+            badge.innerText = '❌ 誤選';
+            badge.style.display = 'inline-block';
+          }
+        } else if (!isChecked && isOptCorrect) {
+          li.classList.add('ans-missed');
+          if (badge) {
+            badge.className = 'opt-badge badge-is-missed';
+            badge.innerText = '⚠️ 漏選正解';
+            badge.style.display = 'inline-block';
+          }
+        }
+      }
+    });
+
+    // 狀態反饋文字
+    const statusMsg = card.querySelector('.q-status-msg');
+    const refBox = card.querySelector('.answer-ref-wrapper');
+    if (showAnswers && userChoices.length > 0) {
+      const isCorrect = (userChoices.length === correctAnswers.length) &&
+        userChoices.every(c => correctAnswers.includes(c));
+      const letters = correctAnswers.map(i => String.fromCharCode(65 + i)).join(', ');
+
+      if (statusMsg) {
+        statusMsg.className = 'q-status-msg ' + (isCorrect ? 'ok' : 'bad');
+        statusMsg.innerHTML = isCorrect ? '🎉 答對了！' : ('❌ 答錯了！正確答案為：' + letters);
+        statusMsg.style.display = 'inline-block';
+      }
+      if (refBox) refBox.classList.add('show');
+    } else {
+      if (statusMsg) statusMsg.style.display = 'none';
+      if (refBox && !window._forceShowAll) refBox.classList.remove('show');
+    }
+
+    // 歷史紀錄資訊
+    const hist = card.querySelector('.q-history-info');
+    if (hist) {
+      let txt = '';
+      if (data.attempts > 0) {
+        txt = `作答 ${data.attempts} 次 · 錯誤 ${data.wrong || 0} 次`;
+        if (data.lastWrongAt) {
+          const d = new Date(data.lastWrongAt);
+          txt += ` (上次答錯: ${d.toLocaleDateString()})`;
+        }
+      }
+      hist.innerText = txt;
+    }
+
+    // 星號
+    const starBtn = card.querySelector('.btn-q.star');
+    if (starBtn) {
+      starBtn.classList.toggle('starred', !!data.star);
+      starBtn.innerHTML = data.star ? "⭐ 已加星" : "☆ 加星";
+    }
+
+    // 筆記與標籤還原
+    const textarea = card.querySelector('.user-note-input');
+    if (textarea) textarea.value = data.note || '';
+    card.querySelectorAll('.reason-tag').forEach(tag => {
+      const tagName = tag.innerText.trim();
+      tag.classList.toggle('active', (data.reasons || []).includes(tagName));
+    });
+  }
+
+  // 頂部統計數據更新
+  function updateGlobalStats() {
+    let answered = 0, correct = 0, wrong = 0;
+    document.querySelectorAll('.question-block').forEach(card => {
+      const data = getCardData(card.id);
+      if (data.checked && (data.choices || []).length > 0) {
+        answered++;
+        const correctAnswers = getCorrectAnswers(card);
+        const isOk = (data.choices.length === correctAnswers.length) &&
+          data.choices.every(c => correctAnswers.includes(c));
+        if (isOk) correct++; else wrong++;
+      }
+    });
+
+    const elAns = document.getElementById('stat-answered');
+    const elOk = document.getElementById('stat-correct');
+    const elBad = document.getElementById('stat-wrong');
+    if (elAns) elAns.innerText = answered + ' / ' + totalCards;
+    if (elOk) elOk.innerText = correct;
+    if (elBad) elBad.innerText = wrong;
+  }
+
+  // 懸浮列全域動作
+  window.checkAllQuestions = function() {
+    document.querySelectorAll('.question-block').forEach(card => {
+      const userChoices = getUserChoices(card);
+      if (userChoices.length > 0) {
+        const btn = card.querySelector('.btn-q.check');
+        if (btn) checkQuestion(btn);
+      }
+    });
+  };
+
+  window.resetAllQuestions = function() {
+    if (confirm("確定清空本頁所有題目的勾選作答嗎？（筆記內容會予以保留）")) {
+      document.querySelectorAll('.question-block').forEach(card => {
+        const btn = card.querySelector('.btn-q.reset');
+        if (btn) resetQuestion(btn);
+      });
+    }
+  };
+
+  window._forceShowAll = false;
+  window.toggleAllAnswers = function() {
+    window._forceShowAll = !window._forceShowAll;
+    document.querySelectorAll('.question-block').forEach(card => {
+      const refBox = card.querySelector('.answer-ref-wrapper');
+      if (refBox) {
+        if (window._forceShowAll) {
+          refBox.classList.add('show');
+          refBox.querySelectorAll('details').forEach(d => d.open = true);
+        } else {
+          const data = getCardData(card.id);
+          if (!data.checked) refBox.classList.remove('show');
+        }
+      }
+      // 顯示選項標記
+      const items = card.querySelectorAll('.quiz-choice-item');
+      items.forEach(li => {
+        const badge = li.querySelector('.opt-badge');
+        if (window._forceShowAll && li.getAttribute('data-correct') === '1') {
+          li.classList.add('ans-correct');
+          if (badge) {
+            badge.className = 'opt-badge badge-is-correct';
+            badge.innerText = '✅ 正確答案';
+            badge.style.display = 'inline-block';
+          }
+        } else if (!window._forceShowAll) {
+          const data = getCardData(card.id);
+          applyQuestionState(card, data, data.checked);
+        }
+      });
+    });
+  };
+
+  window.exportPartNotes = function() {
+    let md = `# ${document.title} - 我的錯題筆記\n\n產生時間：${new Date().toLocaleString()}\n\n`;
+    let count = 0;
+    document.querySelectorAll('.question-block').forEach((card, idx) => {
+      const data = getCardData(card.id);
+      if (data.note || (data.reasons && data.reasons.length > 0) || (data.wrong > 0)) {
+        count++;
+        const title = card.querySelector('.question-header span')?.innerText || ('Question ' + (idx+1));
+        const stem = card.querySelector('.wpProQuiz_question_text')?.innerText.trim() || '';
+        const correctLetters = getCorrectAnswers(card).map(i => String.fromCharCode(65 + i)).join(', ');
+        
+        md += `### ${title}\n\n`;
+        md += `> **題幹：** ${stem.slice(0, 150)}...\n\n`;
+        md += `- **正確答案：** ${correctLetters}\n`;
+        md += `- **錯誤次數：** ${data.wrong || 0} / 作答 ${data.attempts || 0} 次\n`;
+        if (data.reasons && data.reasons.length > 0) {
+          md += `- **錯誤原因：** ${data.reasons.join('、')}\n`;
+        }
+        if (data.note) {
+          md += `\n**我的筆記檢討：**\n\n${data.note}\n\n`;
+        }
+        md += `---\n\n`;
+      }
+    });
+
+    if (count === 0) {
+      alert("本頁尚無錯誤紀錄或自訂筆記可匯出！");
+      return;
+    }
+
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = document.title.replace(/\s+/g, '_') + "_Notes.md";
+    a.click();
+  };
+
+  // 初始化每張題目卡片
+  document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.question-block');
+    totalCards = cards.length;
+
+    cards.forEach(card => {
+      const cardId = card.id;
+      const data = getCardData(cardId);
+
+      // 選項變更即時高亮
+      card.querySelectorAll('.quiz-choice-input').forEach(input => {
+        input.addEventListener('change', function() {
+          const li = input.closest('.quiz-choice-item');
+          if (input.type === 'radio') {
+            card.querySelectorAll('.quiz-choice-item').forEach(x => x.classList.remove('is-checked'));
+            if (input.checked && li) li.classList.add('is-checked');
+          } else {
+            if (li) li.classList.toggle('is-checked', input.checked);
+          }
+        });
+      });
+
+      applyQuestionState(card, data, data.checked);
+    });
+
+    updateGlobalStats();
+  });
+})();
+</script>
+</body>
+</html>
